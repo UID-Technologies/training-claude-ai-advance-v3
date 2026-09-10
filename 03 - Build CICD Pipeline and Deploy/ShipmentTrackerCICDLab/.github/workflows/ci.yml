@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches:
+      - feature/**
+      - bugfix/**
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore ShipmentTracker.sln
+
+      - name: Verify formatting
+        run: dotnet format ShipmentTracker.sln --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build ShipmentTracker.sln --configuration Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test ShipmentTracker.sln
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory TestResults
+
+      - name: Dependency vulnerability check
+        run: dotnet list ShipmentTracker.sln package --vulnerable --include-transitive
+
+      - name: Publish application
+        run: >
+          dotnet publish src/ShipmentTracker.Api/ShipmentTracker.Api.csproj
+          --configuration Release
+          --no-build
+          --output publish
+
+      - name: Upload published artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shipment-tracker-api-${{ github.sha }}
+          path: publish/
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.sha }}
+          path: TestResults/
+          retention-days: 7

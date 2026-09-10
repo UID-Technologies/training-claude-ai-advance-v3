@@ -1,0 +1,16 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Claims.Domain", "src\Claims.Domain\Claims.Domain.csproj", "{A1000000-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Claims.Application", "src\Claims.Application\Claims.Application.csproj", "{A1000000-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Claims.Infrastructure", "src\Claims.Infrastructure\Claims.Infrastructure.csproj", "{A1000000-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Claims.Api", "src\Claims.Api\Claims.Api.csproj", "{A1000000-0000-0000-0000-000000000004}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Claims.UnitTests", "tests\Claims.UnitTests\Claims.UnitTests.csproj", "{A1000000-0000-0000-0000-000000000005}"
+EndProject
+Project("{FAE04EC0-301F11D3-BF4B-00C04F79EFBC}") = "Claims.IntegrationTests", "tests\Claims.IntegrationTests\Claims.IntegrationTests.csproj", "{A1000000-0000-0000-0000-000000000006}"
+EndProject
+Global
+EndGlobal

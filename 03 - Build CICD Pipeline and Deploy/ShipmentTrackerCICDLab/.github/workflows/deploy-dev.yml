@@ -1,0 +1,83 @@
+name: Deploy Dev
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  IMAGE_NAME: shipment-tracker
+
+jobs:
+  build-and-deploy-dev:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore ShipmentTracker.sln
+
+      - name: Build
+        run: dotnet build ShipmentTracker.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ShipmentTracker.sln --configuration Release --no-build
+
+      - name: Azure login using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        run: az acr login --name "${{ vars.ACR_NAME }}"
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t "${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_NAME}:${{ github.sha }}" \
+            -t "${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_NAME}:dev-latest" \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push "${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_NAME}:${{ github.sha }}"
+          docker push "${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_NAME}:dev-latest"
+
+      - name: Deploy to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name "${{ vars.DEV_CONTAINER_APP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --image "${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_NAME}:${{ github.sha }}"
+
+      - name: Resolve application URL
+        id: app
+        run: |
+          FQDN=$(az containerapp show \
+            --name "${{ vars.DEV_CONTAINER_APP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          echo "url=https://${FQDN}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test
+        run: ./scripts/smoke-test.sh "${{ steps.app.outputs.url }}"
+
+      - name: Deployment summary
+        run: |
+          echo "### Development Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Image: ${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_NAME}:${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.app.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"

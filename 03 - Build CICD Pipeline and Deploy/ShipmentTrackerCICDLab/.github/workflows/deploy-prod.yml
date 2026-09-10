@@ -1,0 +1,66 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Immutable image tag to promote (normally the Git commit SHA)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  IMAGE_NAME: shipment-tracker
+
+jobs:
+  deploy-production:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Azure login using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Confirm image exists
+        run: |
+          az acr repository show-tags \
+            --name "${{ vars.ACR_NAME }}" \
+            --repository "${IMAGE_NAME}" \
+            --query "[?@=='${{ inputs.image_tag }}']" \
+            --output tsv | grep -q "${{ inputs.image_tag }}"
+
+      - name: Deploy same immutable image to Production
+        run: |
+          az containerapp update \
+            --name "${{ vars.PROD_CONTAINER_APP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --image "${{ vars.ACR_LOGIN_SERVER }}/${IMAGE_NAME}:${{ inputs.image_tag }}"
+
+      - name: Resolve production URL
+        id: app
+        run: |
+          FQDN=$(az containerapp show \
+            --name "${{ vars.PROD_CONTAINER_APP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          echo "url=https://${FQDN}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test
+        run: ./scripts/smoke-test.sh "${{ steps.app.outputs.url }}"
+
+      - name: Deployment summary
+        run: |
+          echo "### Production Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Promoted image tag: ${{ inputs.image_tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.app.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"

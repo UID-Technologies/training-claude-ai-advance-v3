@@ -1,0 +1,14 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureCommerce.Domain", "src\SecureCommerce.Domain\SecureCommerce.Domain.csproj", "{B1111111-1111-1111-1111-111111111111}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureCommerce.Data", "src\SecureCommerce.Data\SecureCommerce.Data.csproj", "{B2222222-2222-2222-2222-222222222222}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureCommerce.Services", "src\SecureCommerce.Services\SecureCommerce.Services.csproj", "{B3333333-3333-3333-3333-333333333333}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureCommerce.Web", "src\SecureCommerce.Web\SecureCommerce.Web.csproj", "{B4444444-4444-4444-4444-444444444444}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecureCommerce.Tests", "tests\SecureCommerce.Tests\SecureCommerce.Tests.csproj", "{B5555555-5555-5555-5555-555555555555}"
+EndProject
+Global
+EndGlobal

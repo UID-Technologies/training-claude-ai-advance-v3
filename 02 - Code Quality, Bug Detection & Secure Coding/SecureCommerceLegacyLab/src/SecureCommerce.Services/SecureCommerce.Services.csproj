@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><Nullable>disable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SecureCommerce.Domain\SecureCommerce.Domain.csproj" />
+    <ProjectReference Include="..\SecureCommerce.Data\SecureCommerce.Data.csproj" />
+  </ItemGroup>
+</Project>
