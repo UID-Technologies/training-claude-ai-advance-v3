@@ -459,6 +459,23 @@ src\LegacyBanking.Web\Controllers\CustomerController.cs(36,29): error CS0656:
 Feed it back with `@terminal:powershell` and let Claude connect it to the `dynamic request` parameter in
 `CustomerController.Register` — a legacy smell you will revisit in Module 2.
 
+```
+@terminal:powershell
+
+The build is now showing a new error.
+
+Analyze this terminal output and determine:
+1. What is causing the error?
+2. Which source file/code is responsible?
+3. What is the minimum change required to make the project compile?
+4. Do not change application behavior.
+```
+
+Fix will be
+```
+<Reference Include="Microsoft.CSharp" />
+```
+
 ### Step 0.6 — Verify and commit the baseline
 
 ```powershell
